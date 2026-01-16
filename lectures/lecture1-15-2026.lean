@@ -113,19 +113,23 @@ theorem two_plus_two_is_four : 2 + 2 = 4 := rfl
 
 -- example is a theorem without a name
 example : 2 + 2 = 4 := rfl
+-- rfl: reflexive
 
 -- proving Fermat’s last theorem is considerably harder :)
 theorem Fermat_last_theorem : Fermat_statement := sorry
+-- sorry: like pass
 
 -- a slightly harder example that will be explained later
 def fsq (x : ℤ) := 3 * x^2 + 7
 
 example : ∀ x, fsq x ≥ 7 := by
+  -- intro x → introduces a generic x from ∀ x into the context
   intro x
+  -- simp → simplify the goal using known definitions and lemmas
   simp [fsq]
+  -- sq_nonneg = ∀ x : ℤ, 0 ≤ x^2
+  -- exact → provide a specific proof term that exactly matches the goal.
   exact sq_nonneg x
-
-
 
 
 /- Using Lean as a functional programming language -/
@@ -163,6 +167,7 @@ def factorial : Nat → Nat
 -- solution to the Towers of Hanoi problem
 def hanoi (numDisks start finish aux : Nat) : IO Unit :=
   match numDisks with
+  -- pure() -> return nothing in IO context. opposite of 'do'
   | 0     => pure ()
   | n + 1 => do
       hanoi n start aux finish
@@ -183,8 +188,11 @@ def addNums : List Nat → Nat
 --  useful functions built into Lean’s library
 #eval List.range 7
 
+-- section ... end → creates a local namespace,
+-- so definitions inside do not pollute the global namespace
 section
 open List
+-- open List → allows you to use functions from the List module directly, e.g., range, map, foldl
 
 #eval range 7
 #eval addNums (range 7)
@@ -195,11 +203,12 @@ end
 
 
 -- Lean also supports projection notation
+-- like in OOP class
 def myRange := List.range 7
 #eval myRange.map fun x => x + 3
 
 
-
+-- Everything inside is now called hidden.reverse, hidden.append, etc.
 namespace hidden
 
 def reverseAux : List α → List α → List α
@@ -209,13 +218,13 @@ def reverseAux : List α → List α → List α
 def reverse (as : List α) :List α :=
   reverseAux as []
 
+-- protected allows projection notation?????????????????????????????????????
 protected def append (as bs : List α) : List α :=
   reverseAux as.reverse bs
 
 end hidden
 
 
---
 -- partial keyword for if lean can't verify it terminates. now user's responsibility
 -- to use it correctly
 partial def my_gcd x y :=
@@ -274,6 +283,7 @@ inductive BinTree where
   | empty : BinTree
   | node  : BinTree → BinTree → BinTree
   deriving Repr, DecidableEq, Inhabited
+  -- allows Lean to print values of BinTree, evaluate = using structural induction, give it a default value
 
 open BinTree
 
