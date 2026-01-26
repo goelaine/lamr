@@ -41,13 +41,26 @@ namespace q3
   def helper (rem: List α) (acc : List (List α)) :=
     match rem with
     | []    => acc
-    -- | a::ls => helper ls (acc.append (addOne acc a []))
-    | a::ls => helper ls (acc.append (List.map (fun l => a::l) acc))
+    | a::ls => helper ls (acc.append (addOne acc a []))
+    -- | a::ls => helper ls (acc.append (List.map (fun l => a::l) acc))
 
   def sublists : List α → List (List α)
   | []    => [[]]
   | ls => helper ls.reverse [[]]
 end q3
+
+namespace q4
+
+  def hanoiAdj (numDisks A B C : Nat) : IO Unit :=
+    match numDisks with
+    | 0     => pure ()
+    | n + 1 => do
+        hanoiAdj n A B C
+        IO.println s!"Move disk {n + 1} from peg {A} to peg {B}"
+        hanoiAdj n C B A
+        IO.println s!"Move disk {n + 1} from peg {B} to peg {C}"
+        hanoiAdj n A B C
+end q4
 
 -- q1
 #eval q1.divisors 10
@@ -58,4 +71,7 @@ end q3
 #eval q2.perfectNums
 
 -- q3
-#eval q3.sublists [1,2,3]
+#eval q3.sublists [1,2,4,3]
+
+-- q4
+#eval q4.hanoiAdj 2 1 2 3 
