@@ -62,6 +62,31 @@ namespace q4
         hanoiAdj n A B C
 end q4
 
+namespace q5
+-- inductive List.{u} : Type u → Type u
+-- number of parameters: 1
+-- constructors:
+-- List.nil : {α : Type u} → List α
+-- List.cons : {α : Type u} → α → List α → List α
+  inductive LBinTree (α : Type u) where
+  | empty : LBinTree α
+  | node (label : α) (L : LBinTree α) (R : LBinTree α) : LBinTree α
+  deriving Repr, Inhabited
+
+  open LBinTree
+
+  def myTree := node (5 : Nat) (node (7 : Nat) empty (node 3 empty empty)) (node 6 (node 4 empty empty) (node 2 empty empty))
+
+  def addNodes : LBinTree Nat → Nat
+    | empty       => 0
+    | node a L R  => a + addNodes R + addNodes L
+
+  def toListInorder : LBinTree α → List α
+    | empty       => []
+    | node a L R  => ((toListInorder L).append (a::(toListInorder R)))
+
+end q5
+
 -- q1
 #eval q1.divisors 10
 #eval q1.divisors 12
@@ -74,4 +99,9 @@ end q4
 #eval q3.sublists [1,2,4,3]
 
 -- q4
-#eval q4.hanoiAdj 2 1 2 3 
+#eval q4.hanoiAdj 2 1 2 3
+
+-- q5
+#print q5.myTree
+#eval q5.addNodes q5.myTree
+#eval q5.toListInorder q5.myTree
