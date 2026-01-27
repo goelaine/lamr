@@ -87,6 +87,25 @@ namespace q5
 
 end q5
 
+
+namespace q6
+
+  def factorial : Nat → Nat
+  | 0       => 1
+  | (n + 1) => (n + 1) * factorial n
+
+  partial def pascalRow n i (acc : String) := do
+    let nFact := factorial n
+    match i with
+    | 0   =>  acc.append " 1"
+    | i   =>  pascalRow n (i-1) ((acc.append " ").append (toString (nFact/(factorial i * factorial (n-i)))))
+
+
+  def pascal (n : Nat) : IO Unit :=
+    for i in [0:n] do
+      IO.println s!"{i}:{pascalRow i i ""}"
+end q6
+
 -- q1
 #eval q1.divisors 10
 #eval q1.divisors 12
@@ -105,3 +124,6 @@ end q5
 #print q5.myTree
 #eval q5.addNodes q5.myTree
 #eval q5.toListInorder q5.myTree
+
+-- q6
+#eval q6.pascal 6
