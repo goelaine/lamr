@@ -85,7 +85,7 @@ namespace q1
   open List
 
   def divisors (n: Nat) : List Nat :=
-    (range (n/2+1)).filter (fun x => n%x == 0)
+    if n==0 then [] else (range (n/2+1)).filter (fun x => n%x == 0)
   -- partial def helper (n ls i):=
   --   if i==0 then ls else
   --     (if (n%i)==0 then (helper n (i::ls) (i-1)) else (helper n ls (i-1)))
@@ -216,3 +216,70 @@ end q3
 
 -- q6
 -- #eval q6.pascal 6
+
+
+
+#eval (q1.divisors 0 == [])
+#eval (q1.divisors 1 == [])
+#eval (q1.divisors 2 == [1])
+#eval (q1.divisors 3 == [1])
+#eval (q1.divisors 4 == [1,2])
+#eval (q1.divisors 6 == [1,2,3])
+#eval (q1.divisors 10 == [1,2,5])
+#eval (q1.divisors 12 == [1,2,3,4,6])
+#eval (q1.divisors 28 == [1,2,4,7,14])
+#eval (q1.divisors 100 == [1,2,4,5,10,20,25,50])
+
+
+#eval (q2.perfect 1 == false)
+#eval (q2.perfect 2 == false)
+#eval (q2.perfect 3 == false)
+#eval (q2.perfect 6 == true)
+#eval (q2.perfect 10 == false)
+#eval (q2.perfect 28 == true)
+#eval (q2.perfect 496 == true)
+#eval (q2.perfect 12 == false)
+#eval (q2.perfect 100 == false)
+#eval (q2.perfect 999 == false)
+
+#eval (q2.perfectNums == #[6, 28, 496])
+
+#eval ((q3.sublists ([] : List Nat)) = [[]])
+
+#eval ((q3.sublists ([1] : List Nat)) =
+  [[], [1]])
+
+-- #eval ((q3.sublists ([1,2] : List Nat)) =
+--   [[], [1], [2], [1,2]])
+
+-- #eval ((q3.sublists ([1,2,3] : List Nat)) =
+--   [[], [1], [2], [1,2], [3], [1,3], [2,3], [1,2,3]])
+
+-- #eval ((q3.sublists ([3,2,1] : List Nat)) =
+--   [[], [3], [2], [3,2], [1], [3,1], [2,1], [3,2,1]])
+
+-- #eval ((q3.sublists ([1,1] : List Nat)) =
+--   [[], [1], [1], [1,1]])
+
+-- #eval ((q3.sublists ([1,2,4,3] : List Nat)).length = 16)
+
+-- #eval ((q3.sublists (["a","b"] : List String)) =
+  -- [[], ["a"], ["b"], ["a","b"]])
+
+-- #eval ((q3.sublists ([true,false] : List Bool)) =
+--   [[], [true], [false], [true,false]])
+
+-- #eval ((q3.sublists ([1,2,3,4] : List Nat)).length = 16)
+
+
+#eval (LBinTree.addNodes myTree == 27)
+#eval (LBinTree.toListInorder myTree == [7,3,5,4,6,2])
+
+#eval (LBinTree.addNodes (empty : LBinTree Nat) == 0)
+#eval (LBinTree.toListInorder (empty : LBinTree Nat) == [])
+
+#eval (LBinTree.addNodes (node 1 empty empty) == 1)
+#eval (LBinTree.toListInorder (node 1 empty empty) == [1])
+
+#eval (LBinTree.addNodes (node 2 (node 1 empty empty) empty) == 3)
+#eval (LBinTree.toListInorder (node 2 (node 1 empty empty) empty) == [1,2])
