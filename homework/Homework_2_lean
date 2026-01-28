@@ -1,0 +1,47 @@
+import LAMR
+
+/-
+Problem 4
+-/
+
+def hanoiAdj (numPegs : Nat) (start aux finish : String) : IO Unit :=
+  sorry
+
+-- #eval hanoiAdj 5 "A" "B" "C"
+
+
+/-
+Problem 5
+-/
+
+inductive LBinTree (α : Type)
+  /- fill in constructors here -/
+  deriving Repr
+
+open LBinTree
+
+def myTree : LBinTree Nat :=
+  sorry
+
+-- #eval myTree
+
+namespace LBinTree
+
+def addNodes : LBinTree Nat → Nat := sorry
+
+-- #eval addNodes myTree
+
+def toListInorder : LBinTree α → List α := sorry
+
+-- #eval toListInorder myTree
+
+end LBinTree
+
+
+/-
+Problem 6
+-/
+
+def pascal (n : Nat) : IO Unit := sorry
+
+-- #eval pascal 10

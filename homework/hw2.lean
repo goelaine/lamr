@@ -1,3 +1,85 @@
+import LAMR
+
+
+
+/-
+Problem 4
+-/
+
+def hanoiAdj (numDisks : Nat) (start aux finish : String) : IO Unit :=
+  match numDisks with
+  | 0     => pure ()
+  | n + 1 => do
+      hanoiAdj n start aux finish
+      IO.println s!"Move disk {n + 1} from peg {start} to peg {aux}"
+      hanoiAdj n finish aux start
+      IO.println s!"Move disk {n + 1} from peg {aux} to peg {finish}"
+      hanoiAdj n start aux finish
+
+#eval hanoiAdj 5 "A" "B" "C"
+
+
+/-
+Problem 5
+-/
+
+inductive LBinTree (α : Type)
+  | empty : LBinTree α
+  | node (label : α) (L : LBinTree α) (R : LBinTree α) : LBinTree α
+  deriving Repr
+
+open LBinTree
+
+def myTree : LBinTree Nat := node (5 : Nat) (node (7 : Nat) empty (node 3 empty empty)) (node 6 (node 4 empty empty) (node 2 empty empty))
+
+
+  def toListInorder : LBinTree α → List α
+    | empty       => []
+    | node a L R  => ((toListInorder L).append (a::(toListInorder R)))
+
+#eval myTree
+
+namespace LBinTree
+
+def addNodes : LBinTree Nat → Nat
+  | empty       => 0
+  | node a L R  => a + addNodes R + addNodes L
+
+#eval addNodes myTree
+
+def toListInorder : LBinTree α → List α
+  | empty       => []
+  | node a L R  => ((toListInorder L).append (a::(toListInorder R)))
+
+#eval toListInorder myTree
+
+end LBinTree
+
+
+/-
+Problem 6
+-/
+def factorial : Nat → Nat
+  | 0       => 1
+  | (n + 1) => (n + 1) * factorial n
+
+partial def pascalRow n i (acc : String) := do
+  let nFact := factorial n
+  match i with
+  | 0   =>  acc.append " 1"
+  | i   =>  pascalRow n (i-1) ((acc.append " ").append (toString (nFact/(factorial i * factorial (n-i)))))
+
+
+def pascal (n : Nat) : IO Unit :=
+  for i in [0:n] do
+    IO.println s!"{i}:{pascalRow i i ""}"
+
+#eval pascal 10
+
+
+/-
+Problem 1
+-/
 namespace q1
 
   open List
@@ -13,6 +95,9 @@ namespace q1
 
 end q1
 
+/-
+Problem 2
+-/
 namespace q2
   partial def helper (n : Nat) (ls : List Nat) : Bool :=
     match (n, ls) with
@@ -32,6 +117,10 @@ namespace q2
 
 end q2
 
+
+/-
+Problem 3
+-/
 namespace q3
   def addOne (ls: List (List α)) (a : α) (acc : List (List α)) :=
     match ls with
@@ -49,62 +138,62 @@ namespace q3
   | ls => helper ls.reverse [[]]
 end q3
 
-namespace q4
+-- namespace q4
 
-  def hanoiAdj (numDisks A B C : Nat) : IO Unit :=
-    match numDisks with
-    | 0     => pure ()
-    | n + 1 => do
-        hanoiAdj n A B C
-        IO.println s!"Move disk {n + 1} from peg {A} to peg {B}"
-        hanoiAdj n C B A
-        IO.println s!"Move disk {n + 1} from peg {B} to peg {C}"
-        hanoiAdj n A B C
-end q4
+--   def hanoiAdj (numDisks A B C : Nat) : IO Unit :=
+--     match numDisks with
+--     | 0     => pure ()
+--     | n + 1 => do
+--         hanoiAdj n A B C
+--         IO.println s!"Move disk {n + 1} from peg {A} to peg {B}"
+--         hanoiAdj n C B A
+--         IO.println s!"Move disk {n + 1} from peg {B} to peg {C}"
+--         hanoiAdj n A B C
+-- end q4
 
-namespace q5
--- inductive List.{u} : Type u → Type u
--- number of parameters: 1
--- constructors:
--- List.nil : {α : Type u} → List α
--- List.cons : {α : Type u} → α → List α → List α
-  inductive LBinTree (α : Type u) where
-  | empty : LBinTree α
-  | node (label : α) (L : LBinTree α) (R : LBinTree α) : LBinTree α
-  deriving Repr, Inhabited
+-- namespace q5
+-- -- inductive List.{u} : Type u → Type u
+-- -- number of parameters: 1
+-- -- constructors:
+-- -- List.nil : {α : Type u} → List α
+-- -- List.cons : {α : Type u} → α → List α → List α
+--   inductive LBinTree (α : Type u) where
+--   | empty : LBinTree α
+--   | node (label : α) (L : LBinTree α) (R : LBinTree α) : LBinTree α
+--   deriving Repr, Inhabited
 
-  open LBinTree
+--   open LBinTree
 
-  def myTree := node (5 : Nat) (node (7 : Nat) empty (node 3 empty empty)) (node 6 (node 4 empty empty) (node 2 empty empty))
+--   def myTree := node (5 : Nat) (node (7 : Nat) empty (node 3 empty empty)) (node 6 (node 4 empty empty) (node 2 empty empty))
 
-  def addNodes : LBinTree Nat → Nat
-    | empty       => 0
-    | node a L R  => a + addNodes R + addNodes L
+--   def addNodes : LBinTree Nat → Nat
+--     | empty       => 0
+--     | node a L R  => a + addNodes R + addNodes L
 
-  def toListInorder : LBinTree α → List α
-    | empty       => []
-    | node a L R  => ((toListInorder L).append (a::(toListInorder R)))
+--   def toListInorder : LBinTree α → List α
+--     | empty       => []
+--     | node a L R  => ((toListInorder L).append (a::(toListInorder R)))
 
-end q5
-
-
-namespace q6
-
-  def factorial : Nat → Nat
-  | 0       => 1
-  | (n + 1) => (n + 1) * factorial n
-
-  partial def pascalRow n i (acc : String) := do
-    let nFact := factorial n
-    match i with
-    | 0   =>  acc.append " 1"
-    | i   =>  pascalRow n (i-1) ((acc.append " ").append (toString (nFact/(factorial i * factorial (n-i)))))
+-- end q5
 
 
-  def pascal (n : Nat) : IO Unit :=
-    for i in [0:n] do
-      IO.println s!"{i}:{pascalRow i i ""}"
-end q6
+-- namespace q6
+
+--   def factorial : Nat → Nat
+--   | 0       => 1
+--   | (n + 1) => (n + 1) * factorial n
+
+--   partial def pascalRow n i (acc : String) := do
+--     let nFact := factorial n
+--     match i with
+--     | 0   =>  acc.append " 1"
+--     | i   =>  pascalRow n (i-1) ((acc.append " ").append (toString (nFact/(factorial i * factorial (n-i)))))
+
+
+--   def pascal (n : Nat) : IO Unit :=
+--     for i in [0:n] do
+--       IO.println s!"{i}:{pascalRow i i ""}"
+-- end q6
 
 -- q1
 #eval q1.divisors 10
@@ -118,12 +207,12 @@ end q6
 #eval q3.sublists [1,2,4,3]
 
 -- q4
-#eval q4.hanoiAdj 2 1 2 3
+-- #eval q4.hanoiAdj 2 1 2 3
 
 -- q5
-#print q5.myTree
-#eval q5.addNodes q5.myTree
-#eval q5.toListInorder q5.myTree
+-- #print q5.myTree
+-- #eval q5.addNodes q5.myTree
+-- #eval q5.toListInorder q5.myTree
 
 -- q6
-#eval q6.pascal 6
+-- #eval q6.pascal 6
