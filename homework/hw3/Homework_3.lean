@@ -31,6 +31,7 @@ end PropForm
 #eval toString <| prop!{p ∧ (q ∨ r)}.substitute prop!{r ∨ ¬ s} "t"
 
 
+
 /-
 exercise 6
 -/
@@ -105,22 +106,44 @@ exercise 8
 #check PropForm.toNnfForm
 
 -- Replace this with the real definition.
-inductive EnnfForm where
-  -- the type is currently empty
+inductive EnnfForm
+  | lit  (l : Lit)       : EnnfForm
+  | conj (A B : EnnfForm) : EnnfForm
+  | disj (A B : EnnfForm) : EnnfForm
+  | biImpl (A B : EnnfForm) : EnnfForm
 
 namespace EnnfForm
 
 -- Replace this with the real definition.
 def toPropForm : EnnfForm → PropForm
-  | _ => sorry
+  | .lit Lit.tr => PropForm.tr
+  | .lit Lit.fls => PropForm.fls
+  | .lit (Lit.pos p) => PropForm.var p
+  | .lit (Lit.neg p) => .neg (PropForm.var p)
+  | .conj A B => .conj (toPropForm A) (toPropForm B)
+  | .disj A B => .disj (toPropForm A) (toPropForm B)
+  | .biImpl A B => .biImpl (toPropForm A) (toPropForm B)
 
 end EnnfForm
+
+def EnnfForm.neg : EnnfForm → EnnfForm
+  | .lit l    => lit l.negate
+  | .conj A B => disj A.neg B.neg
+  | .disj A B => conj A.neg B.neg
+  | .biImpl A B => disj (conj A.neg B) (conj A B.neg)
 
 namespace PropForm
 
 -- Replace this with the real definition.
 def toEnnfForm : PropForm → EnnfForm
-  | _ => sorry
+  | PropForm.tr         => .lit Lit.tr
+  | PropForm.fls         => .lit Lit.fls
+  | PropForm.var p      => .lit (Lit.pos p)
+  | PropForm.neg A      => (toEnnfForm A).neg
+  | PropForm.conj A B   => (toEnnfForm A).conj (toEnnfForm B)
+  | PropForm.disj A B   => (toEnnfForm A).disj (toEnnfForm B)
+  | PropForm.impl A B   => ((toEnnfForm A).neg).disj (toEnnfForm B)
+  | PropForm.biImpl A B => (toEnnfForm A).biImpl (toEnnfForm B)
 
 end PropForm
 
