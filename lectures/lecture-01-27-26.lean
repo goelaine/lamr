@@ -85,6 +85,7 @@ def depth : PropForm → Nat
 
 -- fill in, return the set of variables
 
+-- . for anonymous constructor syntax. ie. The expected type is already known
 def vars' : PropForm → List String
   | .tr => []
   | .fls => []
@@ -126,6 +127,7 @@ end PropForm
 #print PropAssignment
 
 #check PropAssignment.eval
+#print PropAssignment.eval
 
 def assignExample := PropAssignment.mk [("q", true)]
 

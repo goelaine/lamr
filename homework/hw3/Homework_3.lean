@@ -10,8 +10,16 @@ exercise 5
 namespace PropForm
 
 -- Replace this with the real definition.
-def substitute : PropForm → PropForm → String → PropForm
-  | _, _, _ => tr
+def substitute (A : PropForm) (B : PropForm) (p : String) : PropForm :=
+match A with
+  | .tr => tr
+  | .fls => fls
+  | var s => if s=p then B else var s
+  | neg A1 => neg (substitute A1 B p)
+  | conj A1 A2 => conj (substitute A1 B p) (substitute A2 B p)
+  | disj A1 A2 => disj (substitute A1 B p) (substitute A2 B p)
+  | impl A1 A2 => impl (substitute A1 B p) (substitute A2 B p)
+  | biImpl A1 A2 => biImpl (substitute A1 B p) (substitute A2 B p)
 
 end PropForm
 
@@ -31,8 +39,22 @@ exercise 6
 -- because it is expecting a `PropForm` there.
 
 -- Replace this with the real definition.
+def LittoProp : Lit -> PropForm
+  | .tr => .tr
+  | .fls => .fls
+  | .pos p => .var p
+  | .neg p => .neg (.var p)
+
+def ClausetoProp : Clause → PropForm
+  | [] => .fls
+  | x::xs => .disj (LittoProp x) (ClausetoProp xs)
+
+
+
 def CnfForm.toPropForm (F : CnfForm) : PropForm :=
-  .tr
+  match F with
+  | [] => .tr
+  | x::xs => .conj (ClausetoProp x) (CnfForm.toPropForm xs)
 
 #eval toString cnf!{p q r, r -s t, q t}.toPropForm
 
@@ -56,9 +78,21 @@ exercise 7
 -- function in the `CnfForm` namespace like this.
 -- In the recursive call, refer to the function as just `eval`.
 
+def ClauseEval (x : Clause) (P : PropAssignment) : Bool :=
+  match x with
+  | [] => false
+  | x::xs =>
+      (match x with
+      | Lit.tr => true
+      | Lit.fls => false
+      | Lit.pos s => P.eval s
+      | Lit.neg s => not (P.eval s)) || ClauseEval xs P
+
 -- Replace this with the real definition.
-def CnfForm.eval : CnfForm → PropAssignment → Bool
-  | _, _      => true
+def CnfForm.eval (C : CnfForm) (P : PropAssignment) : Bool :=
+  match C with
+  | [] => true
+  | x::xs => (ClauseEval x P) && (eval xs P)
 
 #eval cnf!{p q r, r -s t, q t}.eval propassign!{-p, -q, -r, s, -t}
 
