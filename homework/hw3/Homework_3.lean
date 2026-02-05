@@ -168,7 +168,7 @@ def EnnfForm.neg : EnnfForm → EnnfForm
   | .lit l    => lit l.negate
   | .conj A B => disj A.neg B.neg
   | .disj A B => conj A.neg B.neg
-  | .biImpl A B => disj (conj A.neg B) (conj A B.neg)
+  | .biImpl A B => biImpl A.neg B
 
 namespace PropForm
 
