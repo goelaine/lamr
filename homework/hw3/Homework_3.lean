@@ -21,6 +21,8 @@ match A with
   | impl A1 A2 => impl (substitute A1 B p) (substitute A2 B p)
   | biImpl A1 A2 => biImpl (substitute A1 B p) (substitute A2 B p)
 
+
+
 end PropForm
 
 -- Putting the definition in the `PropForm` namespace means you can use the
@@ -29,6 +31,17 @@ end PropForm
 #eval toString <| prop!{p ∧ (q ∨ r)}.substitute prop!{r ∨ ¬ s} "q"
 #eval toString <| prop!{p ∧ (q ∨ r)}.substitute prop!{r ∨ ¬ s} "p"
 #eval toString <| prop!{p ∧ (q ∨ r)}.substitute prop!{r ∨ ¬ s} "t"
+
+#eval toString <| prop!{p}.substitute prop!{r} "p"
+#eval toString <| prop!{p}.substitute prop!{r} "q"
+#eval toString <| prop!{¬ p}.substitute prop!{q} "p"
+#eval toString <| prop!{p ∧ q}.substitute prop!{r} "p"
+#eval toString <| prop!{p ∧ q}.substitute prop!{r} "q"
+#eval toString <| prop!{p ∨ q}.substitute prop!{r} "p"
+#eval toString <| prop!{p → q}.substitute prop!{r} "p"
+#eval toString <| prop!{p ↔ q}.substitute prop!{r} "q"
+#eval toString <| prop!{¬ (p ∨ q)}.substitute prop!{r} "p"
+#eval toString <| prop!{p ∧ (q ∨ r)}.substitute prop!{r ∨ ¬ s} "q"
 
 
 
@@ -48,6 +61,7 @@ def LittoProp : Lit -> PropForm
 
 def ClausetoProp : Clause → PropForm
   | [] => .fls
+  | x::[] => LittoProp x
   | x::xs => .disj (LittoProp x) (ClausetoProp xs)
 
 
@@ -55,9 +69,21 @@ def ClausetoProp : Clause → PropForm
 def CnfForm.toPropForm (F : CnfForm) : PropForm :=
   match F with
   | [] => .tr
+  | x::[] => ClausetoProp x
   | x::xs => .conj (ClausetoProp x) (CnfForm.toPropForm xs)
 
 #eval toString cnf!{p q r, r -s t, q t}.toPropForm
+
+#eval toString cnf!{}.toPropForm
+#eval toString cnf!{p}.toPropForm
+#eval toString cnf!{-p}.toPropForm
+#eval toString cnf!{p q}.toPropForm
+#eval toString cnf!{p, q}.toPropForm
+#eval toString cnf!{p q, r}.toPropForm
+#eval toString cnf!{p q, -r}.toPropForm
+#eval toString cnf!{p q r}.toPropForm
+#eval toString cnf!{p, -p}.toPropForm
+#eval toString cnf!{p q, -q r}.toPropForm
 
 
 /-
@@ -87,7 +113,7 @@ def ClauseEval (x : Clause) (P : PropAssignment) : Bool :=
       | Lit.tr => true
       | Lit.fls => false
       | Lit.pos s => P.eval s
-      | Lit.neg s => not (P.eval s)) || ClauseEval xs P
+      | Lit.neg s => !(P.eval s)) || ClauseEval xs P
 
 -- Replace this with the real definition.
 def CnfForm.eval (C : CnfForm) (P : PropAssignment) : Bool :=
@@ -96,6 +122,18 @@ def CnfForm.eval (C : CnfForm) (P : PropAssignment) : Bool :=
   | x::xs => (ClauseEval x P) && (eval xs P)
 
 #eval cnf!{p q r, r -s t, q t}.eval propassign!{-p, -q, -r, s, -t}
+
+#eval cnf!{}.eval propassign!{}
+#eval cnf!{p}.eval propassign!{p}
+#eval cnf!{p}.eval propassign!{-p}
+#eval cnf!{-p}.eval propassign!{p}
+#eval cnf!{p q}.eval propassign!{p}
+#eval cnf!{p q}.eval propassign!{-p, -q}
+#eval cnf!{p, q}.eval propassign!{p, q}
+#eval cnf!{p, q}.eval propassign!{p, -q}
+#eval cnf!{p q}.eval propassign!{p, -q}
+#eval cnf!{p, -p}.eval propassign!{p}
+#eval cnf!{p q r, -q}.eval propassign!{p, q, r}
 
 
 /-
@@ -147,5 +185,29 @@ def toEnnfForm : PropForm → EnnfForm
 
 end PropForm
 
--- #eval prop!{¬ ((p ↔ q ↔ r) ∨ s ↔ t)}.toEnnfForm
--- #eval toString <| prop!{¬ ((p ↔ q ↔ r) ∨ s ↔ t)}.toEnnfForm.toPropForm
+
+#eval prop!{p}.toEnnfForm
+#eval prop!{¬ p}.toEnnfForm
+#eval prop!{p ∧ q}.toEnnfForm
+#eval prop!{p ∨ q}.toEnnfForm
+#eval prop!{p → q}.toEnnfForm
+#eval prop!{p ↔ q}.toEnnfForm
+#eval prop!{¬ (p ∧ q)}.toEnnfForm
+#eval prop!{¬ (p ∨ q)}.toEnnfForm
+#eval prop!{¬ (p → q)}.toEnnfForm
+#eval prop!{¬ ((p ↔ q) ∨ r)}.toEnnfForm
+
+#eval prop!{¬ ((p ↔ q ↔ r) ∨ s ↔ t)}.toEnnfForm
+#eval toString <| prop!{¬ ((p ↔ q ↔ r) ∨ s ↔ t)}.toEnnfForm.toPropForm
+
+
+#eval toString <| (prop!{p}).toEnnfForm.toPropForm
+#eval toString <| (prop!{¬ p}).toEnnfForm.toPropForm
+#eval toString <| (prop!{p ∧ q}).toEnnfForm.toPropForm
+#eval toString <| (prop!{p ∨ q}).toEnnfForm.toPropForm
+#eval toString <| (prop!{p → q}).toEnnfForm.toPropForm
+#eval toString <| (prop!{p ↔ q}).toEnnfForm.toPropForm
+#eval toString <| (prop!{¬ (p ∧ q)}).toEnnfForm.toPropForm
+#eval toString <| (prop!{¬ (p ∨ q)}).toEnnfForm.toPropForm
+#eval toString <| (prop!{¬ (p → q)}).toEnnfForm.toPropForm
+#eval toString <| prop!{¬ ((p ↔ q ↔ r) ∨ s ↔ t)}.toEnnfForm.toPropForm
