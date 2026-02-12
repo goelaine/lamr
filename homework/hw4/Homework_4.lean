@@ -97,7 +97,23 @@ Exercise 2.
 
 -- ** Write this function. **
 def rectangleConstraints (m n k : Nat) : CnfForm :=
-  []
+  Id.run do
+  let mut cnf : CnfForm := []
+  for i in [1:n+1] do
+    for j in [1:m+1] do
+      let clause : Clause :=
+        (List.range k).map fun c => Lit.pos s!"p_{i}_{j}_{c+1}"
+      cnf := clause :: cnf
+      for c in [1:k+1] do
+        let atMostCol : List Clause :=
+          (List.range (k-c)).map fun co => [Lit.neg s!"p_{i}_{j}_{co+c+1}", Lit.neg s!"p_{i}_{j}_{c}"]
+        cnf := List.append atMostCol cnf
+      for x in [i+1:n+1] do
+        for y in [j+1:m+1] do
+          let notEqCorn : List Clause :=
+            (List.range k).map fun c => [Lit.neg s!"p_{i}_{j}_{c+1}",Lit.neg s!"p_{x}_{y}_{c+1}",Lit.neg s!"p_{x}_{j}_{c+1}",Lit.neg s!"p_{i}_{y}_{c+1}"]
+          cnf := List.append notEqCorn cnf
+  return cnf
 
 /-
 These should be satisfiable.
