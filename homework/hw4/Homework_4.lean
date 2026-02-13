@@ -140,10 +140,24 @@ def Lit.isPos : Lit → Bool
   | pos s => true
   | _     => false
 
+
+def literalParse (s : String) : Nat × Nat ×Nat :=
+  let s := String.Slice.copy (s.drop 2)
+  let nums := s.splitOn "_"
+  match nums with
+  | [i, j, c] => (i.toNat?.get!, j.toNat?.get! ,c.toNat?.get!)
+  | _ => (0,0,0)
+
 -- ** Write this part: interpret the positive literals as a rectangle. **
 def decodeSolution (m n k: Nat) (τ : List Lit) : Except String (Array (Array Nat)) := do
   let mut s : Array (Array Nat) := Array.replicate m (Array.replicate n 0)
-  -- use the literals to fill in the rectangle
+  let pos := List.filter Lit.isPos τ
+  let pos := List.map Lit.var pos
+  for i in [0 : List.length pos] do
+    let (x,y,c) := literalParse pos[i]!
+    let r := s[y-1]!
+    let r := r.set! (x-1) c
+    s := s.set! (y-1) r
   return s
 
 def outputSolution (m n k : Nat) (τ : List Lit) : IO Unit :=
