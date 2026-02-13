@@ -156,7 +156,7 @@ def decodeSolution (m n k: Nat) (τ : List Lit) : Except String (Array (Array Na
   for i in [0 : List.length pos] do
     let (x,y,c) := literalParse pos[i]!
     let r := s[y-1]!
-    let r := r.set! (x-1) c
+    let r := r.set! (x-1) (c-1)
     s := s.set! (y-1) r
   return s
 
@@ -171,6 +171,18 @@ def outputSolution (m n k : Nat) (τ : List Lit) : IO Unit :=
           IO.println ""
 
 -- Try it out.
+
+
+-- def filt (m n k : Nat) (τ : List Lit) : List String :=
+--   let pos := List.filter Lit.isPos τ
+--   List.map Lit.var pos
+
+
+-- #eval show IO Unit from do
+--   let (_, result) ← callCadical <| rectangleConstraints 9 12 3
+--   match result with
+--     | SatResult.Unsat _ => IO.println "unsat."
+--     | SatResult.Sat τ  =>  IO.println (filt 9 12 3 τ)
 
 #eval show IO Unit from do
   let (_, result) ← callCadical <| rectangleConstraints 10 10 3
