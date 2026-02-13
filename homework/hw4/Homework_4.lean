@@ -173,17 +173,6 @@ def outputSolution (m n k : Nat) (τ : List Lit) : IO Unit :=
 -- Try it out.
 
 
--- def filt (m n k : Nat) (τ : List Lit) : List String :=
---   let pos := List.filter Lit.isPos τ
---   List.map Lit.var pos
-
-
--- #eval show IO Unit from do
---   let (_, result) ← callCadical <| rectangleConstraints 9 12 3
---   match result with
---     | SatResult.Unsat _ => IO.println "unsat."
---     | SatResult.Sat τ  =>  IO.println (filt 9 12 3 τ)
-
 #eval show IO Unit from do
   let (_, result) ← callCadical <| rectangleConstraints 10 10 3
   match result with
