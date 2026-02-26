@@ -20,6 +20,8 @@ def Clause.eval : Clause → PropAssignment → Bool
 
 open Resolution
 
+#print VerboseProof
+#print VerboseStep
 /-
 A decision procedure for propositional logic that produces either a satisfying assignment or a proof
 of unsatisfiability. You should start by reviewing the exmaples in the second import above.
@@ -68,6 +70,7 @@ def DecisionResult.show : DecisionResult → IO Unit
       IO.println s!"Refutation found:"
       p.show
 
+
 /-
 This procedure takes a `VerboseProof` and a list of line numbers corresponding to the clauses of a CNF. It either
 produces a satisfying propositional assignment or extends the proof to a refutation of the CNF.
@@ -83,7 +86,24 @@ builds a proof incrementally.
 -/
 partial def decide_aux (vp : VerboseProof) (cnf : List Nat) : DecisionResult :=
   -- ** Replace this with your code! **
-  .sat []
+  if cnf.any (fun i => vp[i]!.clause==[]) then  -- the empty clause
+    .unsat vp
+  else
+    match getVar? vp cnf with
+      | none     => .sat []
+      | some var => Id.run do
+          let (pos, neg, rest) := getPosNegClauseNums vp var cnf
+          let mut new_clauses : List Nat := []
+          let mut vp := vp
+          for i in pos do
+            for j in neg do
+              let c₁ := vp[i]!.clause
+              let c₂ := vp[j]!.clause
+              let c := resolve c₁ c₂ var
+              if ¬ IsTautology c then
+                vp := vp.push (VerboseStep.res var i j c)
+                new_clauses := (vp.size -1)::new_clauses
+          decide_aux vp (new_clauses ++ rest)
 
 /--
 This procedure puts it all together: it takes a CNF formula, adds them as hypotheses to a verbose
