@@ -130,3 +130,24 @@ def toughGame : List NumberMindGuess := [
 
 /- This is the one you need to solve! -/
 #eval solveNumberMind 16 toughGame
+
+
+-- hw 1c
+-- WTS that there is no other solution/assignment to the constraints.
+-- Thus, we can forbid this assignment to try to find another one.
+-- ie. constraints and not(assignment)
+-- If unsat, then we know it's unique
+def numberMindUnique (puzzleLen : Nat) (guesses : List NumberMindGuess) : IO Unit := do
+  let (_, result) ← callCadical <| buildNumberMind puzzleLen guesses
+  let newClause := match result with
+    | SatResult.Unsat _ => []
+    | SatResult.Sat   τ => τ
+  let cnf := (newClause.map fun l => l.negate)::(buildNumberMind puzzleLen guesses)
+  let (_, result) ← callCadical <| cnf
+  match result with
+    | SatResult.Unsat _ => IO.println "unsat."
+    | SatResult.Sat   τ => match (decodeSolution puzzleLen τ) with
+      | Except.ok s => IO.println s
+      | Except.error e => IO.println "error"
+
+#eval numberMindUnique 16 toughGame
