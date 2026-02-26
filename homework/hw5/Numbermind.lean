@@ -19,9 +19,37 @@ def NumberMindGuess.ofGuess (ns : List Nat) (k : Nat) : NumberMindGuess := {
   lits := guessRowToLits ns
   k }
 
+
+-- from hw2
+namespace q3
+  def addOne (ls: List (List α)) (a : α) (acc : List (List α)) :=
+    match ls with
+    | []      => acc
+    | b::ls   => (addOne ls a ((a::b)::acc))
+
+  def helper (rem: List α) (acc : List (List α)) :=
+    match rem with
+    | []    => acc
+    | a::ls => helper ls (acc.append (addOne acc a []))
+    -- | a::ls => helper ls (acc.append (List.map (fun l => a::l) acc))
+
+  def sublists : List α → List (List α)
+  | []    => [[]]
+  | ls => helper ls.reverse [[]]
+end q3
+
+
+-- hw 1a
+def atLeastK (ns: List Lit) (k: Nat) : CnfForm :=
+  let sublists := q3.sublists ns
+  sublists.filter fun l => l.length == ns.length - k + 1
+
+def exactlyK (ns: List Lit) (k: Nat) : CnfForm :=
+  (atLeastK ns k).append (atLeastK (ns.map fun l => l.negate) (ns.length - k))
+
+
 -- If you use variables `x_i_v` to say that entry `i` has value `v`, you can use the
 -- following to turn a satisfying assignment into a solution,.
-
 def decodeSolution (puzzleLen : Nat) (τ : List Lit): Except String (List Nat) := do
   let mut soln : Array Nat := Array.replicate puzzleLen 0
   for l in τ do
