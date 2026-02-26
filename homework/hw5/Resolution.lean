@@ -93,17 +93,33 @@ partial def decide_aux (vp : VerboseProof) (cnf : List Nat) : DecisionResult :=
       | none     => .sat []
       | some var => Id.run do
           let (pos, neg, rest) := getPosNegClauseNums vp var cnf
-          let mut new_clauses : List Nat := []
-          let mut vp := vp
-          for i in pos do
-            for j in neg do
-              let c₁ := vp[i]!.clause
-              let c₂ := vp[j]!.clause
-              let c := resolve c₁ c₂ var
-              if ¬ IsTautology c then
-                vp := vp.push (VerboseStep.res var i j c)
-                new_clauses := (vp.size -1)::new_clauses
-          decide_aux vp (new_clauses ++ rest)
+          let mut cnfTrue := rest
+          let mut vpTrue := vp
+          for i in neg do
+            vpTrue := vpTrue.push (VerboseStep.hyp (vpTrue[i]!.clause.erase (Lit.neg var)))
+            cnfTrue := (vpTrue.size -1)::cnfTrue
+          match decide_aux vpTrue cnfTrue with
+          | .sat τ => .sat ((var, true)::τ)
+          | .unsat _ =>
+            let mut cnfFalse := rest
+            let mut vpFalse := vp
+            for i in pos do
+              vpFalse := vpFalse.push (VerboseStep.hyp (vpFalse[i]!.clause.erase (Lit.pos var)))
+              cnfFalse := (vpFalse.size -1)::cnfFalse
+            match decide_aux vpFalse cnfFalse with
+              | .sat τ => .sat ((var, false)::τ)
+              | .unsat _ =>
+                let mut new_clauses : List Nat := []
+                let mut vp := vp
+                for i in pos do
+                  for j in neg do
+                    let c₁ := vp[i]!.clause
+                    let c₂ := vp[j]!.clause
+                    let c := resolve c₁ c₂ var
+                    if ¬ IsTautology c then
+                      vp := vp.push (VerboseStep.res var i j c)
+                      new_clauses := (vp.size -1)::new_clauses
+                decide_aux vp (new_clauses ++ rest)
 
 /--
 This procedure puts it all together: it takes a CNF formula, adds them as hypotheses to a verbose
@@ -141,6 +157,14 @@ def example_sat : CnfForm := cnf!{
 }
 
 #eval decide example_sat |>.show
+
+  --x  q -r,
+  --x -p -q  r,
+  --x  q  r -s,
+  --x -q -r  s,
+  --x  r  s,
+  --x -p -r -s,
+  --x -p  q  s
 
 /-
 Note: this method returns all the clauses derived in the search, whether or not they are
