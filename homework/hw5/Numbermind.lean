@@ -68,15 +68,12 @@ print a solution.
 def buildNumberMind (puzzleLen : Nat) (guesses : List NumberMindGuess) : CnfForm :=
   Id.run do
   let mut cnf : CnfForm := []
-  -- let mut allLits := []
   for i in [0:puzzleLen] do
     let lits : List Lit := (List.range 10).map (fun v => mkLit i v)
     cnf := (exactlyK lits 1).append cnf
-    -- allLits := allLits.append lits
   for g in guesses do
     cnf := (exactlyK g.lits g.k).append cnf
   return cnf
-  -- return (exactlyK allLits puzzleLen).append cnf
 
 def solveNumberMind (puzzleLen : Nat) (guesses : List NumberMindGuess) : IO Unit := do
   let (_, result) ← callCadical <| buildNumberMind puzzleLen guesses
@@ -84,7 +81,7 @@ def solveNumberMind (puzzleLen : Nat) (guesses : List NumberMindGuess) : IO Unit
     | SatResult.Unsat _ => IO.println "unsat."
     | SatResult.Sat   τ => match (decodeSolution puzzleLen τ) with
       | Except.ok s => IO.println s
-      | Except.error e => IO.println "error"
+      | Except.error _ => IO.println "error"
 
 
 -- This lets us write `ofGuess` instead of `NumberMindGuess.ofGuess`
