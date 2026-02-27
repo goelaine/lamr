@@ -75,7 +75,7 @@ def DecisionResult.show : DecisionResult → IO Unit
 This procedure takes a `VerboseProof` and a list of line numbers corresponding to the clauses of a CNF. It either
 produces a satisfying propositional assignment or extends the proof to a refutation of the CNF.
 
-The algorithm is similar to that of `refute` from the import; the only difference is that it has build the truth
+The algorithm is similar to that of `refute` from the import; the only difference is that it has to build the truth
 assignment in the first case and build the proof in the second.
 
 Remember that an element `vp : VerboseProof` is an array, so you can use array operations. Using
