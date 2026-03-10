@@ -38,27 +38,75 @@ example (h : ¬ (P → Q)) : ¬ Q := by
   exact q
 
 example (h : P ∧ ¬ Q) : ¬ (P → Q) := by
-  sorry
+  intro pq
+  rcases h with ⟨ p, q ⟩
+  apply q
+  apply pq
+  exact p
 
 example (h1 : P ∨ Q) (h2 : P → R) : R ∨ Q := by
-  sorry
+  rcases h1 with p | q
+  . left
+    apply h2
+    exact p
+  . right
+    exact q
+
 
 example (h1 : P ∨ Q → R) : (P → R) ∧ (Q → R) := by
-  sorry
+  constructor
+  . intro p
+    apply h1
+    . left
+      exact p
+  . intro q
+    apply h1
+    . right
+      exact q
+
 
 example (h1 : P → R) (h2 : Q → R) : P ∨ Q → R := by
-  sorry
+  intro pq
+  rcases pq with p | q
+  apply h1
+  exact p
+  apply h2
+  exact q
+
 
 example (h : ¬ (P ∨ Q)) : ¬ P ∧ ¬ Q := by
-  sorry
+  constructor
+  . intro p
+    apply h
+    . left
+      exact p
+  . intro q
+    apply h
+    . right
+      exact q
+
 
 -- this one requires classical logic!
 example (h : ¬ (P ∧ Q)) : ¬ P ∨ ¬ Q := by
-  sorry
+  by_cases p : P
+  . right
+    intro q
+    apply h
+    constructor
+    . exact p
+    . exact q
+  . left
+    exact p
+
 
 -- this one too
 example (h : P → Q) : ¬ P ∨ Q := by
-  sorry
+  by_cases p : P
+  . right
+    apply h
+    exact p
+  . left
+    . exact p
 
 /-
 Prove the following using only `rw` and the identities given.
