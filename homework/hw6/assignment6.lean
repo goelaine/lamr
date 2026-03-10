@@ -124,13 +124,13 @@ and you can provides argument to general identities to instantiate them.
 /- RESTRICTION: You can only use the above rewrite rules -/
 
 example (x y z : Nat) : (x + y) + z = (z + y) + x := by
-  sorry
+  rw [add_assoc x y z, add_comm x (y+z), add_comm z y]
 
 example (x y z : Nat) : (x^y)^z = (x^z)^y := by
-  sorry
+  rw [←pow_mul x y z, mul_comm y z, ←pow_mul x z y]
 
 example (x y z w : Nat) : (x^y)^(z + w) = x^(y * z + y * w) := by
-  sorry
+  rw [←pow_mul x y (z+w), mul_add y z w]
 
 /-
 A *group* is a structure with *, ⁻¹, 1 satisfing the basic group laws.
