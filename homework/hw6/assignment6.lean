@@ -165,11 +165,11 @@ You can use `rw [h]` to replace any expression of the form `e * e` by `1`.
 
 theorem fact1 (h : ∀ x : G, x * x = 1) (y z : G) :
     y * z = y * (y * z) * (y * z) * z := by
-  sorry
+  nth_rw 1 [←mul_one y, ←h (y*z), ←mul_assoc]
 
 theorem fact2 (h : ∀ x : G, x * x = 1) (y z : G) :
     z * y = y * (y * z) * (y * z) * z := by
-  sorry
+  rw [←mul_assoc,←mul_assoc,mul_assoc, h z, mul_one, h, one_mul]
 
 theorem main (h : ∀ x : G, x * x = 1) (y z : G) :
     y * z = z * y := by
