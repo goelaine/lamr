@@ -74,19 +74,21 @@ variable (P Q R : Prop)
 
 -- 2A. Prove this by providing a proof term.
 example : P ∧ Q → P ∨ R :=
-  sorry
+  fun h => Or.inl h.left
 
 -- 2B. Prove this by providing a proof term.
 example (h : P → Q → R) : P ∧ Q → R :=
-  sorry
+  fun x => (h x.left) x.right
 
 -- 2C. Prove this by providing a proof term.
 example (h : P ∧ Q → R) : P → Q → R :=
-  sorry
+  fun x => fun y => h (And.intro x y)
 
 -- 2D. Prove this by providing a proof term.
 example (h : P ∨ Q) : (P → R) → (Q → R) → R :=
-  sorry
+  fun h1 => fun h2 => match h with
+    | Or.inl p => h1 p
+    | Or.inr q => h2 q
 
 end
 
