@@ -112,26 +112,39 @@ def mul' : Nat → Nat → Nat
 
 -- 3A. Prove this using induction and rw only.
 theorem mul'_add (m n k : Nat) : mul' m (n + k) = mul' m n + mul' m k := by
-  sorry
+  induction k with
+  | zero => rw[Nat.add_zero, mul', Nat.add_zero]
+  | succ k ih => rw[Nat.add_succ, mul', mul', ←Nat.add_assoc, ih]
 
 -- 3B. Prove this using induction and rw only.
 theorem mul'_assoc (m n k : Nat) : mul' (mul' m n) k = mul' m (mul' n k) := by
-  sorry
+  induction k with
+  | zero => rw[mul', mul', mul']
+  | succ k ih => rw[mul'_add, mul'_add, mul'_add, ih, mul', mul', mul', mul',mul'_add,mul']
 
 -- 3C. Prove this using induction and rw only.
 theorem zero_mul' (m : Nat) : mul' 0 m = 0 := by
-  sorry
+  induction m with
+  | zero => rw[mul']
+  | succ m ih => rw[mul'_add, ih, mul',mul', Nat.add_zero]
+  -- why did Nat.add_zero apply itself twice on its own???
 
 theorem aux (m n : Nat) : m + Nat.succ n = n + Nat.succ m := by
   rw [Nat.add_succ, Nat.add_succ, Nat.add_comm]
 
 -- 3D. Prove this using induction and rw only.
 theorem succ_mul' (m n : Nat) : mul' (Nat.succ m) n = mul' m n + n := by
-  sorry
+  induction n with
+  | zero => rw[mul', Nat.add_zero, mul']
+  | succ n ih =>
+    rw[mul',mul', ih,Nat.add_assoc,aux, ←Nat.add_assoc]
+    -- Nat.succ_eq_add_one applied automatically???
 
 -- 3E. Prove this using induction and rw only.
 theorem mul'_comm (m n : Nat) : mul' m n = mul' n m := by
-  sorry
+  induction n with
+  | zero => rw[zero_mul', mul']
+  | succ n ih => rw[mul', succ_mul',ih]
 
 
 /-
