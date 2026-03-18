@@ -248,12 +248,14 @@ Create a world with at most three objects in which all the following sentences a
 -/
 
 def ockham : World := [
-  -- add objects here
+  ⟨tet,large,3,3⟩,
+  ⟨cube,medium,2,2⟩,
+  ⟨dodec, small, 1, 1⟩
 ]
 
 -- Tip: You can pin this display open using the 📌 icon in the Lean Infoview
 #eval ockham.show
--- #3d_world ockham
+#3d_world ockham
 
 #eval ockham.eval fo!{∀ x. ∀ y. (SameRow(%x, %y) ∧ SameCol(%x, %y)) → %x = %y}
 #eval ockham.eval fo!{∃ x. Tet(%x) ∧ Large(%x)}
@@ -273,12 +275,16 @@ Create as world (with as many objects as you like) in which all the following se
 -/
 
 def arnault : World := [
-  -- add objects here
+  ⟨tet, medium, 2,2⟩,
+  ⟨dodec, small, 2, 1⟩,
+  ⟨dodec, small, 3,2⟩,
+  ⟨cube, small, 1, 2⟩,
+  ⟨dodec, small, 2, 3⟩
 ]
 
 -- Tip: You can pin this display open using the 📌 icon in the Lean Infoview
 #eval arnault.show
--- #3d_world arnault
+#3d_world arnault
 
 #eval arnault.eval fo!{∀ x. ∀ y. (SameRow(%x, %y) ∧ SameCol(%x, %y)) → %x = %y}
 #eval arnault.eval fo!{∃ x. ∃ y. ∃ z. Cube(%x) ∧ Dodec(%y) ∧ Tet(%z)}
