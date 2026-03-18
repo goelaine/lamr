@@ -167,8 +167,9 @@ example (f : α → β) (x : α) (xs : List α) : map f (x :: xs) = f x :: map f
 
 -- 4A. Prove this using induction and rw only.
 example (f : α → β) (xs : List α) : map f (tail xs) = tail (map f xs) := by
-  sorry
-
+  induction xs with
+  | nil => rw[map, tail, tail, map]
+  | cons x xs ih => rw[map,tail,tail]
 -- returns `none` if the list if empty
 #check head?
 #check head?_nil
@@ -192,7 +193,9 @@ example (f : α → β) (a : α) : Option.map f (some a) = some (f a) := by
 
 -- 4B. Prove this using induction and rw only.
 example (f : α → β) (xs : List α) : Option.map f (head? xs) = head? (map f xs) := by
-  sorry
+  induction xs with
+  | nil => rw [head?, Option.map, map, head?]
+  | cons x xs ih => rw[head?,map,head?,Option.map]
 
 /-- `snoc` is the mirror image of `cons`. -/
 def snoc : List α → α → List α
@@ -210,17 +213,21 @@ example (f : α → β) : map f [y] = [f y] := by
 
 -- 4C. Prove this using induction and rw only.
 theorem snoc_eq_append (xs : List α) (y : α) : snoc xs y = xs ++ [y] := by
-  sorry
+  induction xs with
+  | nil => rw[snoc, nil_append]
+  | cons x xs ih => rw[snoc,ih, ←cons_append]
 
 -- 4D. Prove this by induction using induction and rw only.
 theorem map_snoc (f : α → β) (xs : List α) (y : α) : map f (snoc xs y) = snoc (map f xs) (f y) := by
-  sorry
+  induction xs with
+  | nil => rw[snoc,map,map,snoc,map]
+  | cons x xs ih => rw[snoc,map,ih,map,snoc]
 
 #check map_append
 
 -- 4E. Prove it again without induction, but with rw using `snoc_eq_apppend`, `map_append`, and `map`.
 theorem map_snoc' (f : α → β) (xs : List α) (y : α) : map f (snoc xs y) = snoc (map f xs) (f y) := by
-  sorry
+  rw [snoc_eq_append,map_append, snoc_eq_append, map, map]
 
 /-
 Problem 5 (3 + 3 = 6 Points).
