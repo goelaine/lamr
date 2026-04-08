@@ -2,23 +2,16 @@ import LAMR.Util.FirstOrder
 open Lean (AssocList)
 open FOTerm
 
-
-
-def varsInTerm (ts: List FOTerm): List String :=
-  match ts with
-  | [] => []
-  | x::xs => (varsInTerm xs).union (match x with
-              | var s => [s]
-              | app _ ts => varsInTerm ts)
-
+def collectFOTermVar : FOTerm → List String
+  | var x => [x]
+  | app _ ts => ts.foldl (fun acc t => acc.union (collectFOTermVar t)) []
 
 -- Implement this.
--- Remember that you can use `xs.union ys` to compute the union of two lists without
--- introducing duplicates.
-def collectRhsVars : List (FOTerm × FOTerm) → List String :=
-  fun ls => match ls with
+-- Remember that you can use `xs.union ys` to compute the union of two lists without introducing duplicates.
+def collectRhsVars : List (FOTerm × FOTerm) → List String
   | [] => []
-  | (_,y)::xs => (varsInTerm [y]).union (collectRhsVars xs)
+  | (_, rhs) :: rest =>
+  (collectFOTermVar rhs).union (collectRhsVars rest)
 
 -- Implement this.
 -- You can use `x ∈ forbidden` to check if a string `x` is in the list `forbidden`.
@@ -26,29 +19,18 @@ def collectRhsVars : List (FOTerm × FOTerm) → List String :=
 partial def match_aux? (forbidden : List String) (env : AssocList String FOTerm) :
       List (FOTerm × FOTerm) → Option (AssocList String FOTerm)
   | [] => some env
-  | (app f1 l1, app f2 l2) :: eqs => if f1 = f2 ∧ l1.length = l2.length
-        then match_aux? forbidden env ((l1.zip l2) ++ eqs) else none
-  | (var x, t) :: eqs => if env.contains x then match_aux? forbidden env (eqs.cons (env.getD x, t))
-      else if var x == t then match_aux? forbidden env eqs
-      else if x ∈ forbidden then none
-      else match_aux? forbidden (env.insert x t) eqs
-  | (t, var x) :: eqs => match_aux? forbidden env ((var x, t)::eqs)
-
-
-
-  -- | [] => some env
-  -- | (app f1 l1, app f2 l2) :: eqs =>
-  --     if f1 = f2 ∧ l1.length = l2.length then
-  --       unify? env ((l1.zip l2) ++ eqs)
-  --     else none
-  -- | (var x, t) :: eqs =>
-  --     if env.contains x then unify? env (eqs.cons (env.getD x, t))
-  --     else match checkAssignment env x t with
-  --       | .trivial  => unify? env eqs
-  --       | .ok => unify? (env.cons x t) eqs
-  --       | .cycle  => none
-  -- | (t, var x) :: eqs => unify? env ((var x, t) :: eqs)
--- end
+  | (app f1 l1, app f2 l2) :: eqs =>
+    if f1 ≠ f2 ∨ l1.length ≠ l2.length then none
+    else match_aux? forbidden env ((l1.zip l2) ++ eqs)
+  | (var x, t) :: eqs =>
+    if t == var x then
+      match_aux? forbidden env eqs
+    else if x ∈ forbidden then none
+    else
+      match env.find? x with
+      | some t' => match_aux? forbidden env ((t', t) :: eqs)
+      | none => match_aux? forbidden (env.insert x t) eqs
+  | (t, var x) :: eqs => match_aux? forbidden env ((var x, t) :: eqs)
 
 def match? (eqs : List (FOTerm × FOTerm)) :=
   match_aux? (collectRhsVars eqs) AssocList.nil eqs

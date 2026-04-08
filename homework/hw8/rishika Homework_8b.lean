@@ -149,13 +149,6 @@ def substituteGtConstraints (a : Int) (x : String) (u : LinearExp) (eqs : List L
       result := newEq :: result
   some result
 
-
-
-def bucket (e : LinearExp) (x : String) : Int :=
-  match e.get? x with
-  | none => 1
-  | some i => if i>0 then 2 else 3
-
 /--
 Given a list of expressions and a variable, `x`, sort them into three lists:
 - constraints in which `x` does not appear
@@ -163,14 +156,19 @@ Given a list of expressions and a variable, `x`, sort them into three lists:
 - constraints in which `x` has a negative coefficient
 -/
 def sortGtConstraints (x : String)  (exps : List LinearExp) :
-    List LinearExp × List LinearExp × List LinearExp :=
-  match exps with
-  | [] => ([],[],[])
-  | e::exs => let (non, pos, neg) := sortGtConstraints x exs
-      match bucket e x with
-      | 1 => (e::non, pos, neg)
-      | 2 => (non, e::pos, neg)
-      | _ => (non, pos, e::neg)
+    List LinearExp × List LinearExp × List LinearExp := Id.run do
+  let mut na : List LinearExp := []
+  let mut pos   : List LinearExp := []
+  let mut neg   : List LinearExp := []
+  for e in exps do
+    let c := e.getD x 0
+    if c = 0 then
+      na := e :: na
+    else if c > 0 then
+      pos := e :: pos
+    else
+      neg := e :: neg
+  return (na, pos, neg)
 
 /--
 Given a list of gtzero constraints and a variable, eliminate the variable
@@ -190,15 +188,16 @@ But be careful: if `-b * u + a * v` is the empty expression, we should return `n
 to indicate that the constraints are unsatisfiable.
 -/
 def elimVarGtConstraints (x : String) (gtzeros : List LinearExp) : Option (List LinearExp) := Id.run do
-  let (non, pos, neg) := sortGtConstraints x gtzeros
-  let mut res := non
-  for p in pos do
-    for n in neg do
-      let new := linearCombination (-n.getD x 0) (p.erase x) (p.getD x 0) (n.erase x)
-      if new.isEmpty then return none else res := new :: res
-  some res
-
-
+  let mut (na, pos, neg) := sortGtConstraints x gtzeros
+  -- something like susbstitutegtconstraints
+  for ex1 in pos do
+    for ex2 in neg do
+      let newEq := linearCombination (-ex2.getD x 0) (ex1.erase x) (ex1.getD x 0) (ex2.erase x)
+      if newEq.isEmpty then
+        return none
+      else
+        na:= newEq::na
+  some na
 
 /-
 Tests.
