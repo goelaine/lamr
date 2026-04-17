@@ -309,7 +309,7 @@ def AlmostToSmt (m n : Nat) : List Sexp := Id.run do
     body := (sexp!{(assert (and (>= {xmax} (+ {xmin} {natConst (i-1)})) (<= {xmax} (+ {xmin} {natConst i}))))})::body
     body := (sexp!{(assert (and (>= {ymax} (+ {ymin} {natConst (i-1)})) (<= {ymax} (+ {ymin} {natConst i}))))})::body
 
-    body := (sexp!{(assert (= (+ (- {xmax} {xmin}) (- {ymax} {ymin})) {natConst (2*i-1)}))})::body
+    body := (sexp!{(assert (= (+ (- {xmax} {xmin}) 1 (- {ymax} {ymin}) 1) {natConst (2*i+1)}))})::body
 
   for i in [1:m+1] do
     for j in [1:m+1] do
@@ -366,11 +366,11 @@ def printAlmostSquare (n m : Nat) (model : Sexp) : IO Unit := do
 
 
 -- Call the SAT solver to construct the almost square.
-
+-- TIME: 15 seconds on inputs 100,200
 #eval (do
   let cmds := AlmostToSmt 8 15
   -- Set `verbose := false` to hide SMT-LIB communications
-  let out ← callZ3 cmds (verbose := true)
+  let out ← callZ3 cmds (verbose := false)
   match out with
   | Sexp.atom "sat" :: m :: _ =>
     IO.println <| decodeModelConsts m
@@ -391,7 +391,7 @@ def printAlmostSquare (n m : Nat) (model : Sexp) : IO Unit := do
 def bvConst (i : Nat) := toBVConst 16 i
 
 
-def almostToSmtBv (n m : Nat) : List Sexp := Id.run do
+def almostToSmtBv (m n : Nat) : List Sexp := Id.run do
   let mut body : List Sexp := []
   for i in [1:m+1] do
     let xmin := xmin i
@@ -412,23 +412,22 @@ def almostToSmtBv (n m : Nat) : List Sexp := Id.run do
     body := (sexp!{(assert (= (bvadd (bvsub {xmax} {xmin}) (bvsub {ymax} {ymin})) {bvConst (2*i-1)}))})::body
 
   for i in [1:m+1] do
-    for j in [1:m+1] do
-      if i<j then
-        let xmini := xmin i
-        let xmaxi := xmax i
-        let ymini := ymin i
-        let ymaxi := ymax i
-        let xminj := xmin j
-        let xmaxj := xmax j
-        let yminj := ymin j
-        let ymaxj := ymax j
-        let mut ls : List Sexp := []
-        ls := (sexp!{(bvslt {xmaxi} {xminj})})::ls
-        ls := (sexp!{(bvslt {xmaxj} {xmini})})::ls
-        ls := (sexp!{(bvslt {ymaxj} {ymini})})::ls
-        ls := (sexp!{(bvslt {ymaxi} {yminj})})::ls
+    for j in [i+1:m+1] do
+      let xmini := xmin i
+      let xmaxi := xmax i
+      let ymini := ymin i
+      let ymaxi := ymax i
+      let xminj := xmin j
+      let xmaxj := xmax j
+      let yminj := ymin j
+      let ymaxj := ymax j
+      let mut ls : List Sexp := []
+      ls := (sexp!{(bvslt {xmaxi} {xminj})})::ls
+      ls := (sexp!{(bvslt {xmaxj} {xmini})})::ls
+      ls := (sexp!{(bvslt {ymaxj} {ymini})})::ls
+      ls := (sexp!{(bvslt {ymaxi} {yminj})})::ls
 
-        body := (sexp!{(assert {multiAritySexp "or" ls})})::body
+      body := (sexp!{(assert {multiAritySexp "or" ls})})::body
 
   return sexps!{
     (set-logic QF_BV)
@@ -438,8 +437,10 @@ def almostToSmtBv (n m : Nat) : List Sexp := Id.run do
     (get-model)
   }
 
--- Call the SAT solver to construct the result square.
 
+
+-- Call the SAT solver to construct the result square.
+-- TIME: 10 seconds on inputs 100,200
 #eval (do
   let cmds := almostToSmtBv 8 15
   -- Set `verbose := false` to hide SMT-LIB communications
