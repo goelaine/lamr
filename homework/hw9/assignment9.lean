@@ -387,8 +387,52 @@ def printAlmostSquare (n m : Nat) (model : Sexp) : IO Unit := do
 
 -- TODO: Define the bitvector-based encoding.
 
-def almostToSmtBv (n m : Nat) : List Sexp :=
-sexps!{()}
+def almostToSmtBv (n m : Nat) : List Sexp := Id.run do
+  let mut body : List Sexp := []
+  for i in [1:m+1] do
+    let xmin := xmin i
+    let xmax := xmax i
+    let ymin := ymin i
+    let ymax := ymax i
+
+    body := (sexp!{(declare-const {xmin} Int)})::body
+    body := (sexp!{(declare-const {xmax} Int)})::body
+    body := (sexp!{(declare-const {ymin} Int)})::body
+    body := (sexp!{(declare-const {ymax} Int)})::body
+
+    body := (sexp!{(assert (and (<= 1 {xmin}) (<= {xmax} {natConst (n+1)}) (<= {xmin} {xmax})))})::body
+    body := (sexp!{(assert (and (<= 1 {ymin}) (<= {ymax} {natConst (n)}) (<= {ymin} {ymax})))})::body
+    body := (sexp!{(assert (and (>= {xmax} (+ {xmin} {natConst (i-1)})) (<= {xmax} (+ {xmin} {natConst i}))))})::body
+    body := (sexp!{(assert (and (>= {ymax} (+ {ymin} {natConst (i-1)})) (<= {ymax} (+ {ymin} {natConst i}))))})::body
+
+    body := (sexp!{(assert (= (+ (- {xmax} {xmin}) (- {ymax} {ymin})) {natConst (2*i-1)}))})::body
+
+  for i in [1:m+1] do
+    for j in [1:m+1] do
+      if i<j then
+        let xmini := xmin i
+        let xmaxi := xmax i
+        let ymini := ymin i
+        let ymaxi := ymax i
+        let xminj := xmin j
+        let xmaxj := xmax j
+        let yminj := ymin j
+        let ymaxj := ymax j
+        let mut ls : List Sexp := []
+        ls := (sexp!{(<= {xmaxi} (- {xminj} 1))})::ls
+        ls := (sexp!{(<= {xmaxj} (- {xmini} 1))})::ls
+        ls := (sexp!{(<= {ymaxj} (- {ymini} 1))})::ls
+        ls := (sexp!{(<= {ymaxi} (- {yminj} 1))})::ls
+
+        body := (sexp!{(assert {multiAritySexp "or" ls})})::body
+
+  return sexps!{
+    (set-logic QF_LIA)
+    (set-option :produce-models true)
+    ...{body.reverse}
+    (check-sat)
+    (get-model)
+  }
 
 -- Call the SAT solver to construct the result square.
 
