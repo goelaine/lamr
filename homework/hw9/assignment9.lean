@@ -387,6 +387,10 @@ def printAlmostSquare (n m : Nat) (model : Sexp) : IO Unit := do
 
 -- TODO: Define the bitvector-based encoding.
 
+
+def bvConst (i : Nat) := toBVConst 16 i
+
+
 def almostToSmtBv (n m : Nat) : List Sexp := Id.run do
   let mut body : List Sexp := []
   for i in [1:m+1] do
@@ -395,17 +399,17 @@ def almostToSmtBv (n m : Nat) : List Sexp := Id.run do
     let ymin := ymin i
     let ymax := ymax i
 
-    body := (sexp!{(declare-const {xmin} Int)})::body
-    body := (sexp!{(declare-const {xmax} Int)})::body
-    body := (sexp!{(declare-const {ymin} Int)})::body
-    body := (sexp!{(declare-const {ymax} Int)})::body
+    body := (sexp!{(declare-const {xmin} (_ BitVec 16))})::body
+    body := (sexp!{(declare-const {xmax} (_ BitVec 16))})::body
+    body := (sexp!{(declare-const {ymin} (_ BitVec 16))})::body
+    body := (sexp!{(declare-const {ymax} (_ BitVec 16))})::body
 
-    body := (sexp!{(assert (and (<= 1 {xmin}) (<= {xmax} {natConst (n+1)}) (<= {xmin} {xmax})))})::body
-    body := (sexp!{(assert (and (<= 1 {ymin}) (<= {ymax} {natConst (n)}) (<= {ymin} {ymax})))})::body
-    body := (sexp!{(assert (and (>= {xmax} (+ {xmin} {natConst (i-1)})) (<= {xmax} (+ {xmin} {natConst i}))))})::body
-    body := (sexp!{(assert (and (>= {ymax} (+ {ymin} {natConst (i-1)})) (<= {ymax} (+ {ymin} {natConst i}))))})::body
+    body := (sexp!{(assert (and (bvsle #x0001 {xmin}) (bvsle {xmax} {bvConst (n+1)}) (bvsle {xmin} {xmax})))})::body
+    body := (sexp!{(assert (and (bvsle #x0001 {ymin}) (bvsle {ymax} {bvConst (n)}) (bvsle {ymin} {ymax})))})::body
+    body := (sexp!{(assert (and (bvsge {xmax} (bvadd {xmin} {bvConst (i-1)})) (bvsle {xmax} (bvadd {xmin} {bvConst i}))))})::body
+    body := (sexp!{(assert (and (bvsge {ymax} (bvadd {ymin} {bvConst (i-1)})) (bvsle {ymax} (bvadd {ymin} {bvConst i}))))})::body
 
-    body := (sexp!{(assert (= (+ (- {xmax} {xmin}) (- {ymax} {ymin})) {natConst (2*i-1)}))})::body
+    body := (sexp!{(assert (= (bvadd (bvsub {xmax} {xmin}) (bvsub {ymax} {ymin})) {bvConst (2*i-1)}))})::body
 
   for i in [1:m+1] do
     for j in [1:m+1] do
@@ -419,15 +423,15 @@ def almostToSmtBv (n m : Nat) : List Sexp := Id.run do
         let yminj := ymin j
         let ymaxj := ymax j
         let mut ls : List Sexp := []
-        ls := (sexp!{(<= {xmaxi} (- {xminj} 1))})::ls
-        ls := (sexp!{(<= {xmaxj} (- {xmini} 1))})::ls
-        ls := (sexp!{(<= {ymaxj} (- {ymini} 1))})::ls
-        ls := (sexp!{(<= {ymaxi} (- {yminj} 1))})::ls
+        ls := (sexp!{(bvslt {xmaxi} {xminj})})::ls
+        ls := (sexp!{(bvslt {xmaxj} {xmini})})::ls
+        ls := (sexp!{(bvslt {ymaxj} {ymini})})::ls
+        ls := (sexp!{(bvslt {ymaxi} {yminj})})::ls
 
         body := (sexp!{(assert {multiAritySexp "or" ls})})::body
 
   return sexps!{
-    (set-logic QF_LIA)
+    (set-logic QF_BV)
     (set-option :produce-models true)
     ...{body.reverse}
     (check-sat)
