@@ -49,6 +49,12 @@ Conclusion: No grocer is a cyclist.
 
 def grocer_is_not_a_cyclist_hypotheses : List FOForm := [
   -- Every honest and industrious person is healthy.
+  fo!{Honest(X) ∧ Ind(X) → Healthy(X)},
+  fo!{Grocer(X) → ¬ Healthy(X)},
+  fo!{Grocer(X) ∧ Ind(X) → Honest(X)},
+  fo!{Cyclist(X) → Ind(X)},
+  fo!{Cyclist(X) ∧ ¬ Healthy(X) → ¬ Honest(X)}
+
 
   -- No grocer is healthy.
 
@@ -62,7 +68,7 @@ def grocer_is_not_a_cyclist_hypotheses : List FOForm := [
 
 def grocer_is_not_a_cyclist_conclusion: FOForm :=
 -- No grocer is a cyclist.
-fo!{⊥}
+fo!{Grocer(X) → ¬ Cyclist(X)}
 
 -- Should say Termination Reason: Satisfiable
 #eval (do
@@ -95,29 +101,55 @@ Therefore there is an animal that likes to eat an animal that eats some grains.
 def animals_hypotheses : List FOForm := [
   -- Wolves, foxes, birds, caterpillars, and snails are animals, and there are
   -- some of each of them.
+  fo!{∃ x. W(%x)},
+  fo!{∃ x. F(%x)},
+  fo!{∃ x. B(%x)},
+  fo!{∃ x. C(%x)},
+  fo!{∃ x. S(%x)},
+  fo!{∀ x. W(%x) → A(%x)},
+  fo!{∀ x. F(%x) → A(%x)},
+  fo!{∀ x. B(%x) → A(%x)},
+  fo!{∀ x. C(%x) → A(%x)},
+  fo!{∀ x. S(%x) → A(%x)},
 
   -- Also there are some grains, and grains are plants.
+  fo!{∃ x. G(%x)},
+  fo!{∀ x. G(%x) → P(%x)},
 
   -- Every animal either likes to eat all plants or all animals smaller than
   -- itself that like to eat some plants.
+  fo!{∀ x. A(%x) → ((∀ y. P(%y) → Eat(%x,%y)) ∨ (∀ y. (A(%y) ∧ Smaller(%y,%x) ∧ ∃ z. (P(%z) ∧ Eat(%y,%z))) → Eat(%x,%y)))},
 
   -- Caterpillars and snails are smaller than birds, which are smaller than
   -- foxes, which in turn are smaller than wolves.
+  fo!{∀ x. ∀ y. C(%x) ∧ B(%y) → Smaller(%x,%y)},
+  fo!{∀ x. ∀ y. S(%x) ∧ B(%y) → Smaller(%x,%y)},
+  fo!{∀ x. ∀ y. F(%x) ∧ B(%y) → Smaller(%y,%x)},
+  fo!{∀ x. ∀ y. F(%x) ∧ W(%y) → Smaller(%x,%y)},
+  -- fo!{∀ X. ∀ Y. ∀ Z. Smaller(X,Y) ∧ Smaller(Y,Z) → Smaller(X,Z)},
 
   -- Wolves do not like to eat foxes or grains, while birds like to eat
   -- caterpillars but not snails.
+  fo!{∀ x. ∀ y. F(%y) ∧ W(%x) → ¬ Eat(%x,%y)},
+  fo!{∀ x. ∀ y. G(%y) ∧ W(%x) → ¬ Eat(%x,%y)},
+  fo!{∀ x. ∀ y. S(%y) ∧ B(%x) → ¬ Eat(%x,%y)},
+  fo!{∀ x. ∀ y. C(%y) ∧ B(%x) → Eat(%x,%y)},
 
   -- Caterpillars and snails like to eat some plants.
+  fo!{∀ x. C(%x) → ∃ y. P(%y) ∧ Eat(%x,%y)},
+  fo!{∀ x. S(%x) → ∃ y. P(%y) ∧ Eat(%x,%y)},
 
   -- It turns out that this is not needed.
-  -- fo!{∀ x. ∀ y. ∀ z. Smaller(%x, %y) ∧ Smaller(%y, %z) → Smaller(%x, %z)}
+  fo!{∀ x. ∀ y. ∀ z. Smaller(%x, %y) ∧ Smaller(%y, %z) → Smaller(%x, %z)}
 ]
 
 def animals_conclusion: FOForm :=
 -- Therefore there is an animal that likes to eat an animal that eats some
 -- grains.
-fo!{⊥}
+fo!{∃ x. ∃ y. ∃ z. A(%x) ∧ A(%y) ∧ G(%z) ∧ Eat(%x,%y) ∧ Eat(%y,%z)}
 
+
+-- % Termination reason: Satisfiable
 #eval (do
   discard <| callVampireTptp animals_hypotheses fo!{⊥} (verbose := true)
   : IO Unit)

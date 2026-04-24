@@ -13,7 +13,7 @@ section
 variable {α β : Type} (p q : α → Prop) (r : α → β → Prop)
 
 example : (∀ x, p x) ∧ (∀ x, q x) → ∀ x, p x ∧ q x := by
-  sorry
+  intro h1, h2
 
 example : (∀ x, p x) ∨ (∀ x, q x) → ∀ x, p x ∨ q x := by
   sorry

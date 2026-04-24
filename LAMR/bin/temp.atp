@@ -1,1 +1,25 @@
-fof(c1,conjecture,false).
+fof(ax0,axiom,?[X] : (w(X))).
+fof(ax1,axiom,?[X] : (f(X))).
+fof(ax2,axiom,?[X] : (b(X))).
+fof(ax3,axiom,?[X] : (c(X))).
+fof(ax4,axiom,?[X] : (s(X))).
+fof(ax5,axiom,![X] : ((w(X)) => (a(X)))).
+fof(ax6,axiom,![X] : ((f(X)) => (a(X)))).
+fof(ax7,axiom,![X] : ((b(X)) => (a(X)))).
+fof(ax8,axiom,![X] : ((c(X)) => (a(X)))).
+fof(ax9,axiom,![X] : ((s(X)) => (a(X)))).
+fof(ax10,axiom,?[X] : (g(X))).
+fof(ax11,axiom,![X] : ((g(X)) => (p(X)))).
+fof(ax12,axiom,![X] : ((a(X)) => ((![Y] : ((p(Y)) => (eat(X,Y)))) | (![Y] : (((a(Y)) & ((smaller(Y,X)) & (?[Z] : ((p(Z)) & (eat(Y,Z)))))) => (eat(X,Y))))))).
+fof(ax13,axiom,![X] : (![Y] : (((c(X)) & (b(Y))) => (smaller(X,Y))))).
+fof(ax14,axiom,![X] : (![Y] : (((s(X)) & (b(Y))) => (smaller(X,Y))))).
+fof(ax15,axiom,![X] : (![Y] : (((f(X)) & (b(Y))) => (smaller(Y,X))))).
+fof(ax16,axiom,![X] : (![Y] : (((f(X)) & (w(Y))) => (smaller(X,Y))))).
+fof(ax17,axiom,![X] : (![Y] : (((f(Y)) & (w(X))) => (~(eat(X,Y)))))).
+fof(ax18,axiom,![X] : (![Y] : (((g(Y)) & (w(X))) => (~(eat(X,Y)))))).
+fof(ax19,axiom,![X] : (![Y] : (((s(Y)) & (b(X))) => (~(eat(X,Y)))))).
+fof(ax20,axiom,![X] : (![Y] : (((c(Y)) & (b(X))) => (eat(X,Y))))).
+fof(ax21,axiom,![X] : ((c(X)) => (?[Y] : ((p(Y)) & (eat(X,Y)))))).
+fof(ax22,axiom,![X] : ((s(X)) => (?[Y] : ((p(Y)) & (eat(X,Y)))))).
+fof(ax23,axiom,![X] : (![Y] : (![Z] : (((smaller(X,Y)) & (smaller(Y,Z))) => (smaller(X,Z)))))).
+fof(c1,conjecture,?[X] : (?[Y] : (?[Z] : ((a(X)) & ((a(Y)) & ((g(Z)) & ((eat(X,Y)) & (eat(Y,Z))))))))).
